@@ -16,6 +16,8 @@ curl -fsSL http://mirrors.aliyun.com/docker-ce/linux/ubuntu/gpg | sudo apt-key a
 add-apt-repository "deb [arch=amd64] http://mirrors.aliyun.com/docker-ce/linux/ubuntu $(lsb_release -cs) stable"
 # 更新软件库
 apt-get -y update
+#查看版本
+apt-cache madison docker-ce
 # 安装程序
 apt-get -y install docker-ce=5:19.03.15~3-0~ubuntu-bionic
 # 固定版本
@@ -61,6 +63,7 @@ docker pull registry.aliyuncs.com/google_containers/pause:3.2
 docker pull registry.aliyuncs.com/google_containers/etcd:3.4.3-0
 docker pull registry.aliyuncs.com/google_containers/coredns:1.6.7
 
+
 docker tag registry.aliyuncs.com/google_containers/kube-apiserver:v1.18.20 k8s.gcr.io/kube-apiserver:v1.18.20
 docker tag registry.aliyuncs.com/google_containers/kube-controller-manager:v1.18.20 k8s.gcr.io/kube-controller-manager:v1.18.20
 docker tag registry.aliyuncs.com/google_containers/kube-scheduler:v1.18.20 k8s.gcr.io/kube-scheduler:v1.18.20
@@ -69,23 +72,21 @@ docker tag registry.aliyuncs.com/google_containers/pause:3.2 k8s.gcr.io/pause:3.
 docker tag registry.aliyuncs.com/google_containers/etcd:3.4.3-0 k8s.gcr.io/etcd:3.4.3-0
 docker tag registry.aliyuncs.com/google_containers/coredns:1.6.7 k8s.gcr.io/coredns:1.6.7
 
-docker rmi k8s.gcr.io/kube-apiserver:v1.18.20
-docker rmi k8s.gcr.io/kube-controller-manager:v1.18.20
-docker rmi k8s.gcr.io/kube-scheduler:v1.18.20
-docker rmi k8s.gcr.io/kube-proxy:v1.18.20
-docker rmi k8s.gcr.io/pause:3.2
-docker rmi k8s.gcr.io/etcd:3.4.3-0
-docker rmi k8s.gcr.io/coredns:1.6.7
 
 
 kubeadm init \
---apiserver-advertise-address=192.168.99.22 \
 --image-repository registry.aliyuncs.com/google_containers \
 --service-cidr=10.96.0.0/12 \
+--kubernetes-version=v1.18.0 \
 --pod-network-cidr=10.244.0.0/16 \
 --token-ttl=0
 
 kubeadm init --service-cidr=10.96.0.0/12 --pod-network-cidr=10.244.0.0/16  --ignore-preflight-errors=Swap
+
+kubeadm init --pod-network-cidr 172.16.0.0/16 --image-repository registry.cn-hangzhou.aliyuncs.com/google_containers
+
+#重置配置
+kubeadm reset -f
 
 #配置集群网络 https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
 kubectl apply -f kube-flannel.yml
@@ -100,3 +101,9 @@ kubeadm join
 
 # 查询
 kubectl get pods --all-namespaces
+
+
+
+
+
+
