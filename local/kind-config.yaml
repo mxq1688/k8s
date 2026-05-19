@@ -1,0 +1,9 @@
+# kind 集群配置：把节点 30080 端口映射到本机，方便浏览器访问
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+  - role: control-plane
+    extraPortMappings:
+      - containerPort: 30080
+        hostPort: 8080
+        protocol: TCP
