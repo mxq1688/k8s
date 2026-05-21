@@ -13,7 +13,7 @@ prod/           生产集群：部署脚本 + 生产配置
 | 目录 | 干什么 |
 |------|--------|
 | `base/` | 两边都一样的部分，改一处两边生效 |
-| `local/` | Mac 上 kind 集群 + 2 副本 + NodePort（浏览器 :8080） |
+| `local/` | Mac 上 kind 集群 + 2 副本 + NodePort（浏览器 :8081） |
 | `prod/` | 真集群 + 3 副本 + 探针/资源限制 + ClusterIP |
 
 合并方式：`base` + `local` 或 `prod` 里的 `kustomization.yaml` → `kubectl apply -k`
@@ -25,13 +25,13 @@ prod/           生产集群：部署脚本 + 生产配置
 cd local && ./setup.sh
 ```
 
-访问 http://localhost:8080
+访问 http://localhost:8081
 
 ### setup.sh 在干什么
 
 | 步骤 | 命令 | 作用 |
 |------|------|------|
-| 1 | `kind create cluster ... kind-config.yaml` | 在 Docker 里建集群；8080 映射到 30080 |
+| 1 | `kind create cluster ... kind-config.yaml` | 在 Docker 里建集群；8081 映射到 30080 |
 | 2 | `kubectl config use-context kind-learn` | 后面的 kubectl 都连这台集群 |
 | 3 | `kind load docker-image nginx:alpine` | 镜像导入节点，避免拉取失败 |
 | 4 | `kubectl apply -k local/` | 合并 base+local 配置并部署 nginx |
@@ -52,7 +52,7 @@ cd local && ./setup.sh
 | 预览合并后的 YAML | `kubectl kustomize local/` |
 | 删掉整个本地集群 | `kind delete cluster --name learn` |
 
-改配置后执行 `apply -k local/` 即可，**不必**再跑 `setup.sh`（除非集群删了或 8080 端口映射丢了）。
+改配置后执行 `apply -k local/` 即可，**不必**再跑 `setup.sh`（除非集群删了或端口映射丢了）。
 
 ## 生产
 
@@ -85,7 +85,7 @@ cd prod && ./deploy.sh
 | 文件 | 作用 |
 |------|------|
 | `setup.sh` | 建集群 + 部署（见上表） |
-| `kind-config.yaml` | 仅 `kind create` 时用，配本机 8080 端口 |
+| `kind-config.yaml` | 仅 `kind create` 时用，配本机 8081→30080 端口 |
 | `kustomization.yaml` | 引用 base，副本改 2，打 NodePort 补丁 |
 | `service-nodeport.yaml` | 把 Service 改成 NodePort 30080 |
 
@@ -93,4 +93,6 @@ cd prod && ./deploy.sh
 
 **镜像拉不下来**：`docker pull nginx:alpine && kind load docker-image nginx:alpine --name learn`
 
-**8080 打不开**：`kubectl get pods,svc`，必要时重新 `./local/setup.sh`
+**网页打不开**：`kubectl get pods,svc`；若 8081 被占用可改 `kind-config.yaml` 的 `hostPort`，删集群后重建
+
+**connect: connection refused**：集群 API 连不上，多为 Docker 重启后端口映射坏了 → `kind delete cluster --name learn && ./local/setup.sh`

@@ -44,6 +44,6 @@ kubectl apply -k "$ROOT"
 kubectl rollout status deployment/nginx --timeout=120s
 
 echo ""
-echo "本地集群就绪。访问: http://localhost:8080"
+echo "本地集群就绪。访问: http://localhost:8081"
 echo "  kubectl get pods,svc -n default"
 echo "  $KIND_BIN delete cluster --name $CLUSTER_NAME"
