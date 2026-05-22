@@ -1,0 +1,2 @@
+# Dashboard 登录用 kubeconfig（含 Token，勿提交）
+local/dashboard/*.kubeconfig

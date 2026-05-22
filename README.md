@@ -54,6 +54,34 @@ cd local && ./setup.sh
 
 改配置后执行 `apply -k local/` 即可，**不必**再跑 `setup.sh`（除非集群删了或端口映射丢了）。
 
+### Kubernetes Dashboard（网页管理）
+
+需先有 `kind-learn` 集群（跑过 `setup.sh`）。
+
+```bash
+cd local/dashboard && ./install.sh    # 安装并生成 dashboard-admin.kubeconfig
+# 另开终端:
+./proxy.sh
+```
+
+浏览器打开 Dashboard → 登录选 **Kubeconfig** → 上传：
+
+`local/dashboard/dashboard-admin.kubeconfig`
+
+（安装脚本会自动生成，含集群地址和 Token，已加入 `.gitignore` 勿提交。）
+
+**其他登录方式：**
+
+| 方式 | 命令 | 页面上 |
+|------|------|--------|
+| Kubeconfig（默认） | `./install.sh` | 上传 `dashboard-admin.kubeconfig` |
+| 跳过 | `./enable-skip-login.sh` | 点 **跳过** |
+| Token | `LOGIN_MODE=token ./install.sh` | 粘贴终端 Token |
+
+Token 过期后重新生成：`cd local/dashboard && ./gen-kubeconfig.sh`
+
+**没有用户名+密码**：新版 K8s 不支持该方式。**勿用于生产**。
+
 ## 生产
 
 ```bash
@@ -88,6 +116,9 @@ cd prod && ./deploy.sh
 | `kind-config.yaml` | 仅 `kind create` 时用，配本机 8081→30080 端口 |
 | `kustomization.yaml` | 引用 base，副本改 2，打 NodePort 补丁 |
 | `service-nodeport.yaml` | 把 Service 改成 NodePort 30080 |
+| `dashboard/install.sh` | 安装 Dashboard + 生成 `dashboard-admin.kubeconfig` |
+| `dashboard/gen-kubeconfig.sh` | 重新生成 Kubeconfig |
+| `dashboard/proxy.sh` | 启动 kubectl proxy 供浏览器访问 |
 
 ## 常见问题
 
